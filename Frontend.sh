@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo "NO, DON'T!"
+exit 0
+
 set -e
 
 rm -fR prerendered/*
