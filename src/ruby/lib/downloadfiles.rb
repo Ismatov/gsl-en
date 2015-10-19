@@ -100,7 +100,7 @@ class DownloadFiles
 	    glob_descr = @globs_descs.detect { |g, d| File.fnmatch(g, name) }
 	    if glob_descr
 	        descr = glob_descr[1]
-	        version = name.match(/(([0-9][-.0-9])*[0-9]+[a-z]*)[^0-9]*$/)
+	        version = name.match(/(current|([0-9][-.0-9])*[0-9]+[a-z]*)[^0-9]*$/)
 		version = version[1].gsub('-','.') if version
 		descr = descr.gsub('@@version@@',version) if version
 	        Entry.new(name, path, descr)
