@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo "NO, DON'T!"
+exit 0
+
 set -e
 
 rm -fR prerendered/*
@@ -10,6 +13,11 @@ python src/pyblosxom/content/pyblosxom.cgi staticrender --config=src/pyblosxom/c
 rm -fR release/docroot/Alert
 rm -fR release/docroot/Events
 rm -fR release/docroot/News
+
+# DKLDFLKJ+DF+LKJDF+LKJSDF
+# DFL+KDF+LKJsdFL+KJSDF+Lkj
+
+# More things!!!
 
 if [ -d ../gsl-prerendered/Alert ]; then
   cp -R ../gsl-prerendered/Alert release/docroot
