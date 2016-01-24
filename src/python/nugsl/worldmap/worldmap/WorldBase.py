@@ -25,11 +25,14 @@ class worldBase:
         
         self.r_coords_ex = re.compile('.*[^-0-9.]' + r_coords + '.*', re.M|re.S )
         self.r_coords_no_trans = '()' + r_coords
-        self.r_ocean = re.compile('.*<path[^>]+class="ocean"[^>]*\sd="([^"]+).*',re.M|re.S)
-        r_group_head = '(<g[^a-z0-9])([^>]*)transform="translate\(' + r_coords + '\)"\s+'
+        self.r_ocean = re.compile('.*<path[^>]+class="oceanxx"[^>]*\sd="([^"]+).*',re.M|re.S)
+        r_group_head = '(<g[^a-z0-9])([^>]*)transform="translate\(' + r_coords + '\)"\s*'
         self.r_group_head = re.compile(r_group_head, re.M|re.S)
         self.r_gtrans = re.compile(r_group_head + '(.*)(</g>)',re.M|re.S)
-        self.r_ptrans = re.compile('(<path[^a-z0-9])([^>]*)transform="translate\(' + r_coords + '\)"\s+(.*)(/>)',re.M|re.S)
+        self.r_ptrans = re.compile('(<path[^a-z0-9])([^>]*)transform="translate\(' + r_coords + '\)"\s*(.*)(/>)',re.M|re.S)
+        self.r_ctrans = re.compile('(<circle[^>]*)cx="' + r_coord +
+                                   '" cy="' + r_coord + '"([^>]*)transform="translate\(' +
+                                   r_coords + '\)"\s*(.*/>)',re.M|re.S)
 
         
     def load(self):
@@ -88,7 +91,7 @@ class worldBase:
         self.isflat = True
         fixer = tagFix()
         fixer.tagfix('path', data,
-                     regex='(?m)(?s).*id="ocean".*',
+                     regex='(?m)(?s).*id="oceanxx".*',
                      matchfunc=self.flatness_check1)
         return self.isflat
     
@@ -148,6 +151,10 @@ class worldBase:
                             data,
                             matchfunc=self.perform_translation, 
                             regex=self.r_ptrans )
+        data = fixer.tagfix( 'circle',
+                            data,
+                            matchfunc=self.perform_translation,
+                            regex=self.r_ctrans )
         return fixer.tagfix( 'g',
                             data, 
                             matchfunc=self.perform_translation, 
@@ -163,6 +170,8 @@ class worldBase:
         '''
         if txt[1] == 'g':
             ret = re.sub( self.r_gtrans, self.group_parts, txt )
+        elif txt[1] == 'c':
+            ret = re.sub( self.r_ctrans, self.group_parts_circle, txt)
         else:
             ret = re.sub( self.r_ptrans, self.group_parts, txt)
         return ret
@@ -187,6 +196,25 @@ class worldBase:
         middle1 = re.sub( self.r_coords_no_trans, self.translate, middle1)
         middle2 = re.sub( self.r_coords_no_trans, self.translate, middle2)
         return start + middle1 + middle2 + end
+
+    def group_parts_circle(self, groupobj):
+        '''
+            Internal function.
+
+            Extract the translation values and start, middle
+            and end portions from a group match object for a
+            <circle> tag.  Apply the translation values to the
+            coordinate pair it contains.  The translation
+            transform attribute is omitted from the returned string.
+        '''
+        start = groupobj.group(1)
+        x = float( groupobj.group(2) )
+        y = float( groupobj.group(3) )
+        middle = groupobj.group(4)
+        x = x + float( groupobj.group(5) )
+        y = y + float( groupobj.group(6) )
+        end = groupobj.group(7)
+        return '%scx="%0.4f" cy="%0.4f"%s%s' % (start, x, y, middle, end)
     
     def translate(self, coordobj):
         '''
@@ -223,7 +251,7 @@ class worldBase:
         if r:
             endpoints = r.group(1)
         else:
-            print 'Oops, unable to find the ocean.  Giving up.'
+            print 'Oops, unable to find the oceanxx.  Giving up.'
             sys.exit()
         
         self.endpoints = self.get_coordinates(endpoints)
@@ -398,7 +426,7 @@ class worldBase:
                         y2 = self.conv_left[pos+1][0]
                     except:
                         print 'Ran out of choices in WorldBase.py'
-                        print 'y: %f' %y
+                        print 'x, y: %f,%f' % (x, y)
                         print 'conv_left: %f' % self.conv_left[pos][0]
                     c1 = self.conv_left[pos][1]
                     c2 = self.conv_left[pos+1][1]
