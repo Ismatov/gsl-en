@@ -24,7 +24,7 @@ class flattenWorld(worldBase):
         if not self.idata:
             data = re.sub( self.r_coords, self.expand_values, data )
             fixer = tagFix()
-            data = fixer.tagfix('p',
+            data = fixer.tagfix('path',
                                data,
                                matchfunc=self.fix_pin,
                                regex=self.r_pin)
